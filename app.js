@@ -3,6 +3,8 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
 const dotenv = require('dotenv');
+const rateLimit = require('express-rate-limit');
+const errorHandler = require('./middlewares/error');
 
 // Load env vars
 dotenv.config();
@@ -32,7 +34,17 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 
-// Inject Firebase Config into all views
+// Rate limiting (Security)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP, please try again after 15 minutes'
+});
+
+// Apply rate limiting to auth routes
+app.use('/login', authLimiter);
+app.use('/register', authLimiter);
+
 app.use((req, res, next) => {
   res.locals.firebaseConfig = {
     apiKey: process.env.FIREBASE_API_KEY,
@@ -84,5 +96,8 @@ app.get('/firebase-messaging-sw.js', (req, res) => {
 app.use('/', chatRoutes);
 app.use('/', authRoutes);
 app.use('/admin', adminRoutes);
+
+// Global Error Handler
+app.use(errorHandler);
 
 module.exports = app;
