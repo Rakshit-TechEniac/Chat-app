@@ -1,0 +1,36 @@
+extends ../layout
+
+block content
+  .row
+    .col-md-12
+      h2 Admin Dashboard
+      p.text-muted Detailed user activity and chat statistics.
+      
+      .card.mt-4
+        .card-header.bg-white
+          h5 Registered Users & Chat Stats
+        .card-body
+          .table-responsive
+            table.table.table-hover
+              thead
+                tr
+                  <th>Username</th>
+                  <th>Email</th>
+                  <th>Total Messages</th>
+                  <th>Chatted With</th>
+              tbody
+                each u in users
+                  tr
+                    td #{u.username}
+                    td #{u.email}
+                    td 
+                      span.badge.bg-info.text-dark #{u.messageCount}
+                    td
+                      if u.chatPartners.length > 0
+                        ul.list-unstyled.mb-0
+                          each partner in u.chatPartners
+                            li 
+                              i.bi.bi-person-fill
+                              |  #{partner.username} (#{partner.email})
+                      else
+                        span.text-muted No chats yet
